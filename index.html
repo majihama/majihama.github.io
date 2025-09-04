@@ -2,774 +2,493 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Firebase SDK (compat builds to support firebase.initializeApp and firebase.database) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anima Nexus Compendium</title>
+    <title>Compendium</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-image: url('https://megatenwiki.com/images/f/f7/SMT3_Cathedral_of_Shadows_Screenshot.jpeg');
-            background-size: cover;
-            background-position: center;
-            color: #ffffff;
+            background-color: #1a1a1a;
+            color: #fff;
             margin: 0;
             padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-        }
-        h1, h2, h3 {
-            color: #ffd700;
-        }
-        #demon-list {
-            float: left;
-            width: 30%;
-            max-height: 600px;
-            overflow-y: auto;
-            background-color: rgba(139, 69, 19, 0.3);
-            padding: 10px;
-            border-radius: 5px;
-        }
-        #demon-list ul {
-            list-style: none;
-            padding: 0;
-        }
-        #demon-list li {
-            cursor: pointer;
-            padding: 10px;
-            background-color: rgba(255, 215, 0, 0.1);
-            margin-bottom: 5px;
-            border-radius: 5px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
         }
-        #demon-list li:hover {
-            background-color: rgba(255, 215, 0, 0.3);
+        h1, h2 {
+            color: #00bfff;
+            text-shadow: 0 0 5px #00bfff;
         }
-        #demon-list button {
-            background-color: #ff0000;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 3px;
-            margin-left: 5px;
-        }
-        #demon-list button:hover {
-            background-color: #cc0000;
-        }
-        #demon-details {
-            float: right;
-            width: 65%;
-            display: none;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .section {
+            width: 80%;
+            max-width: 800px;
+            background: #2a2a2a;
+            padding: 20px;
             margin-bottom: 20px;
-            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 191, 255, 0.5);
         }
-        th, td {
-            border: 1px solid #ffd700;
-            padding: 8px;
-            text-align: center;
-            color: #ffffff;
+        .demon-list, .demon-details {
+            margin-top: 10px;
         }
-        th {
-            background-color: rgba(255, 215, 0, 0.2);
+        .demon-item {
+            padding: 10px;
+            border-bottom: 1px solid #00bfff;
+            cursor: pointer;
         }
-        .resistances-table, .affinities-table {
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+        .demon-item:hover {
+            background: #333;
         }
-        .resistances-table {
-            background-image: url('https://imgur.com/gNrZdsa');
-            height: 120px;
-        }
-        .affinities-table {
-            background-image: url('https://imgur.com/FZVL1Ok');
-            height: 150px;
-        }
-        #add-demon-form {
-            clear: both;
-            margin-top: 20px;
-            background-color: rgba(139, 69, 19, 0.3);
-            padding: 15px;
-            border-radius: 5px;
+        form label {
+            display: block;
+            margin-top: 10px;
+            color: #00bfff;
         }
         input, textarea, select {
             width: 100%;
-            margin-bottom: 10px;
             padding: 5px;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            border: 1px solid #ffd700;
+            margin-top: 5px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #00bfff;
+            border-radius: 5px;
         }
         button {
-            padding: 10px;
-            background-color: #ffd700;
-            color: #000000;
+            background-color: #00bfff;
+            color: #000;
             border: none;
+            padding: 10px;
+            margin-top: 10px;
             cursor: pointer;
-            font-weight: bold;
+            border-radius: 5px;
         }
         button:hover {
-            background-color: #ffcc00;
+            background-color: #00ff00;
         }
-        #music-controls {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-        }
-        #demon-image {
-            max-width: 200px;
-            max-height: 200px;
-            border: 2px solid #ffd700;
-            border-radius: 5px;
-        }
-        #edit-form {
-            display: none;
+        .music-control {
             margin-top: 20px;
-            background-color: rgba(139, 69, 19, 0.3);
-            padding: 15px;
-            border-radius: 5px;
         }
     </style>
 </head>
 <body>
-    
-    <div class="container">
-        <h1>Compendium</h1>
-        
-        <div id="demon-list">
-            <h2>List of Demons</h2>
-            <ul></ul>
-        </div>
-        
-        <div id="demon-details">
-            <h2 id="demon-name-title">Demon Details</h2>
-            <img id="demon-image" src="" alt="Demon Image">
-            <table id="stats-table">
-                <tr><th>Name</th><td id="name"></td><th>Race</th><td id="race"></td><th>Level</th><td id="level"></td></tr>
-                <tr><th>HP</th><td id="hp"></td><th>SP</th><td id="sp"></td></tr>
-                <tr><th>STR</th><td id="str"></td><th>Dx</th><td id="dx"></td><th>Vi</th><td id="vi"></td><th>Ma</th><td id="ma"></td><th>Ag</th><td id="ag"></td><th>Lu</th><td id="lu"></td></tr>
-            </table>
-            
-            <h3>Description</h3>
-            <p id="description"></p>
-            
-            <h3>Resistances (Weaknesses, Resist, Null, Absorb, etc.)</h3>
-            <table class="resistances-table">
-                <tr>
-                    <th>Phys</th><th>Fire</th><th>Ice</th><th>Thunder</th><th>Wind</th>
-                    <th>Light</th><th>Dark</th><th>Almighty</th><th>Earth</th><th>Water</th><th>Gun</th>
-                </tr>
-                <tr>
-                    <td id="phys-res"></td><td id="fire-res"></td><td id="ice-res"></td><td id="thunder-res"></td><td id="wind-res"></td>
-                    <td id="light-res"></td><td id="dark-res"></td><td id="almighty-res"></td><td id="earth-res"></td><td id="water-res"></td><td id="gun-res"></td>
-                </tr>
-            </table>
-            
-            <h3>Affinities (Potentiated Damage: +3, -1, etc.)</h3>
-            <table class="affinities-table">
-                <tr>
-                    <th>Phys</th><th>Fire</th><th>Ice</th><th>Thunder</th><th>Wind</th>
-                    <th>Light</th><th>Dark</th><th>Almighty</th><th>Earth</th><th>Water</th><th>Gun</th>
-                    <th>Soporte</th><th>Curación</th><th>Ailment</th>
-                </tr>
-                <tr>
-                    <td id="phys-aff"></td><td id="fire-aff"></td><td id="ice-aff"></td><td id="thunder-aff"></td><td id="wind-aff"></td>
-                    <td id="light-aff"></td><td id="dark-aff"></td><td id="almighty-aff"></td><td id="earth-aff"></td><td id="water-aff"></td><td id="gun-aff"></td>
-                    <td id="support-aff"></td><td id="heal-aff"></td><td id="ailment-aff"></td>
-                </tr>
-            </table>
-            
-            <h3>Ailment Resistances</h3>
-            <p id="ailment-res"></p>
-            
-            <h3>Skills</h3>
-            <table id="skills-table">
-                <tr><th>Skill</th><th>Cost</th><th>Effect</th></tr>
-            </table>
-        </div>
-        
-        <div id="add-demon-form">
-            <h2>Add New Demon</h2>
-            <form>
-                <input type="text" id="new-name" placeholder="Demon Name" required>
-                <input type="text" id="new-race" placeholder="Race" required>
-                <input type="number" id="new-level" placeholder="Level" value="1" required>
-                <input type="number" id="new-hp" placeholder="HP" value="50" required>
-                <input type="number" id="new-sp" placeholder="SP" value="20" required>
-                <input type="number" id="new-str" placeholder="STR" value="5" required>
-                <input type="number" id="new-dx" placeholder="Dx" value="5" required>
-                <input type="number" id="new-vi" placeholder="Vi" value="5" required>
-                <input type="number" id="new-ma" placeholder="Ma" value="5" required>
-                <input type="number" id="new-ag" placeholder="Ag" value="5" required>
-                <input type="number" id="new-lu" placeholder="Lu" value="5" required>
-                
-                <input type="file" id="new-image" accept="image/*">
-                
-                <h3>Resistances (e.g., Weak, Resist, Null, Absorb, -)</h3>
-                <input type="text" id="new-phys-res" placeholder="Phys">
-                <input type="text" id="new-fire-res" placeholder="Fire">
-                <input type="text" id="new-ice-res" placeholder="Ice">
-                <input type="text" id="new-thunder-res" placeholder="Thunder">
-                <input type="text" id="new-wind-res" placeholder="Wind">
-                <input type="text" id="new-light-res" placeholder="Light">
-                <input type="text" id="new-dark-res" placeholder="Dark">
-                <input type="text" id="new-almighty-res" placeholder="Almighty">
-                <input type="text" id="new-earth-res" placeholder="Earth">
-                <input type="text" id="new-water-res" placeholder="Water">
-                <input type="text" id="new-gun-res" placeholder="Gun">
-                
-                <h3>Affinities (e.g., +3, -1, -)</h3>
-                <input type="text" id="new-phys-aff" placeholder="Phys">
-                <input type="text" id="new-fire-aff" placeholder="Fire">
-                <input type="text" id="new-ice-aff" placeholder="Ice">
-                <input type="text" id="new-thunder-aff" placeholder="Thunder">
-                <input type="text" id="new-wind-aff" placeholder="Wind">
-                <input type="text" id="new-light-aff" placeholder="Light">
-                <input type="text" id="new-dark-aff" placeholder="Dark">
-                <input type="text" id="new-almighty-aff" placeholder="Almighty">
-                <input type="text" id="new-earth-aff" placeholder="Earth">
-                <input type="text" id="new-water-aff" placeholder="Water">
-                <input type="text" id="new-gun-aff" placeholder="Gun">
-                <input type="text" id="new-support-aff" placeholder="Soporte">
-                <input type="text" id="new-heal-aff" placeholder="Curación">
-                <input type="text" id="new-ailment-aff" placeholder="Ailment">
-                
-                <h3>Ailment Resistances (e.g., Resist: Poison, Sleep)</h3>
-                <input type="text" id="new-ailment-res" placeholder="Ailment Resistances">
-                
-                <h3>Description</h3>
-                <textarea id="new-description" rows="3" placeholder="Enter demon description..."></textarea>
-                
-                <h3>Skills (One per line: Skill|Cost|Effect)</h3>
-                <textarea id="new-skills" rows="5" placeholder="Skill1|Cost1|Effect1&#10;Skill2|Cost2|Effect2"></textarea>
-                
-                <button type="button" onclick="addDemon()">Add Demon</button>
-                <button type="button" onclick="exportToExcel()">Export to Excel</button>
-            </form>
-        </div>
-        
-        <div id="edit-form">
-            <h2>Edit Demon</h2>
-            <form>
-                <input type="text" id="edit-name" placeholder="Demon Name" required>
-                <input type="text" id="edit-race" placeholder="Race" required>
-                <input type="number" id="edit-level" placeholder="Level" required>
-                <input type="number" id="edit-hp" placeholder="HP" required>
-                <input type="number" id="edit-sp" placeholder="SP" required>
-                <input type="number" id="edit-str" placeholder="STR" required>
-                <input type="number" id="edit-dx" placeholder="Dx" required>
-                <input type="number" id="edit-vi" placeholder="Vi" required>
-                <input type="number" id="edit-ma" placeholder="Ma" required>
-                <input type="number" id="edit-ag" placeholder="Ag" required>
-                <input type="number" id="edit-lu" placeholder="Lu" required>
-                
-                <input type="file" id="edit-image" accept="image/*">
-                
-                <h3>Resistances (e.g., Weak, Resist, Null, Absorb, -)</h3>
-                <input type="text" id="edit-phys-res" placeholder="Phys">
-                <input type="text" id="edit-fire-res" placeholder="Fire">
-                <input type="text" id="edit-ice-res" placeholder="Ice">
-                <input type="text" id="edit-thunder-res" placeholder="Thunder">
-                <input type="text" id="edit-wind-res" placeholder="Wind">
-                <input type="text" id="edit-light-res" placeholder="Light">
-                <input type="text" id="edit-dark-res" placeholder="Dark">
-                <input type="text" id="edit-almighty-res" placeholder="Almighty">
-                <input type="text" id="edit-earth-res" placeholder="Earth">
-                <input type="text" id="edit-water-res" placeholder="Water">
-                <input type="text" id="edit-gun-res" placeholder="Gun">
-                
-                <h3>Affinities (e.g., +3, -1, -)</h3>
-                <input type="text" id="edit-phys-aff" placeholder="Phys">
-                <input type="text" id="edit-fire-aff" placeholder="Fire">
-                <input type="text" id="edit-ice-aff" placeholder="Ice">
-                <input type="text" id="edit-thunder-aff" placeholder="Thunder">
-                <input type="text" id="edit-wind-aff" placeholder="Wind">
-                <input type="text" id="edit-light-aff" placeholder="Light">
-                <input type="text" id="edit-dark-aff" placeholder="Dark">
-                <input type="text" id="edit-almighty-aff" placeholder="Almighty">
-                <input type="text" id="edit-earth-aff" placeholder="Earth">
-                <input type="text" id="edit-water-aff" placeholder="Water">
-                <input type="text" id="edit-gun-aff" placeholder="Gun">
-                <input type="text" id="edit-support-aff" placeholder="Soporte">
-                <input type="text" id="edit-heal-aff" placeholder="Curación">
-                <input type="text" id="edit-ailment-aff" placeholder="Ailment">
-                
-                <h3>Ailment Resistances (e.g., Resist: Poison, Sleep)</h3>
-                <input type="text" id="edit-ailment-res" placeholder="Ailment Resistances">
-                
-                <h3>Description</h3>
-                <textarea id="edit-description" rows="3" placeholder="Enter demon description..."></textarea>
-                
-                <h3>Skills (One per line: Skill|Cost|Effect)</h3>
-                <textarea id="edit-skills" rows="5" placeholder="Skill1|Cost1|Effect1&#10;Skill2|Cost2|Effect2"></textarea>
-                
-                <button type="button" onclick="saveEdit()">Save Changes</button>
-                <button type="button" onclick="cancelEdit()">Cancel</button>
-            </form>
+    <h1>Compendium</h1>
+
+    <div class="section">
+        <h2>List of Demons</h2>
+        <div class="demon-list" id="demonList"></div>
+    </div>
+
+    <div class="section">
+        <h2>Demon Details</h2>
+        <div class="demon-details" id="demonDetails">
+            <p><strong>Name</strong> <span id="detailName"></span></p>
+            <p><strong>Race</strong> <span id="detailRace"></span></p>
+            <p><strong>Level</strong> <span id="detailLevel"></span></p>
+            <p><strong>HP</strong> <span id="detailHp"></span></p>
+            <p><strong>SP</strong> <span id="detailSp"></span></p>
+            <p><strong>STR</strong> <span id="detailStr"></span> <strong>Dx</strong> <span id="detailDx"></span> <strong>Vi</strong> <span id="detailVi"></span> <strong>Ma</strong> <span id="detailMa"></span> <strong>Ag</strong> <span id="detailAg"></span> <strong>Lu</strong> <span id="detailLu"></span></p>
+            <p><strong>Description</strong> <span id="detailDescription"></span></p>
+            <p><strong>Resistances</strong> <span id="detailResistances"></span></p>
+            <p><strong>Affinities</strong> <span id="detailAffinities"></span></p>
+            <p><strong>Ailment Resistances</strong> <span id="detailAilmentResistances"></span></p>
+            <p><strong>Skills</strong> <span id="detailSkills"></span></p>
         </div>
     </div>
-    
-    <div id="music-controls">
-        <audio id="bg-music" loop>
-            <source src="https://vgmsite.com/soundtracks/shin-megami-tensei-liberation-dx2-soundtrack/ocpfzcncrk/02%20Home.mp3" type="audio/mpeg">
-        </audio>
-        <button onclick="toggleMusic()">Play/Pause Music</button>
+
+    <div class="section">
+        <h2>Add New Demon</h2>
+        <form id="addDemonForm">
+            <label for="name">Name</label><input type="text" id="name" required>
+            <label for="race">Race</label><input type="text" id="race" required>
+            <label for="level">Level</label><input type="number" id="level" required>
+            <label for="hp">HP</label><input type="number" id="hp" required>
+            <label for="sp">SP</label><input type="number" id="sp" required>
+            <label>Stats</label>
+            <input type="number" id="str" placeholder="STR" required><input type="number" id="dx" placeholder="Dx" required>
+            <input type="number" id="vi" placeholder="Vi" required><input type="number" id="ma" placeholder="Ma" required>
+            <input type="number" id="ag" placeholder="Ag" required><input type="number" id="lu" placeholder="Lu" required>
+            <label for="description">Description</label><textarea id="description" required></textarea>
+            <label>Resistances (e.g., Weak, Resist, Null, Absorb, -)</label>
+            <select id="physRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="fireRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="iceRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="thunderRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="windRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="lightRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="darkRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="almightyRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="earthRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="waterRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="gunRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <label>Affinities (e.g., +3, -1, -)</label>
+            <input type="text" id="physAff" placeholder="Phys"><input type="text" id="fireAff" placeholder="Fire">
+            <input type="text" id="iceAff" placeholder="Ice"><input type="text" id="thunderAff" placeholder="Thunder">
+            <input type="text" id="windAff" placeholder="Wind"><input type="text" id="lightAff" placeholder="Light">
+            <input type="text" id="darkAff" placeholder="Dark"><input type="text" id="almightyAff" placeholder="Almighty">
+            <input type="text" id="earthAff" placeholder="Earth"><input type="text" id="waterAff" placeholder="Water">
+            <input type="text" id="gunAff" placeholder="Gun"><input type="text" id="soporteAff" placeholder="Soporte">
+            <input type="text" id="curacionAff" placeholder="Curación"><input type="text" id="ailmentAff" placeholder="Ailment">
+            <label for="ailmentResistances">Ailment Resistances (e.g., Resist: Poison, Sleep)</label><input type="text" id="ailmentResistances">
+            <label for="skills">Skills (One per line: Skill|Cost|Effect)</label><textarea id="skills"></textarea>
+            <button type="submit">Add Demon</button>
+            <button type="button" onclick="exportToExcel()">Export to Excel</button>
+        </form>
     </div>
-    
+
+    <div class="section" id="editSection" style="display: none;">
+        <h2>Edit Demon</h2>
+        <form id="editDemonForm">
+            <label for="editName">Name</label><input type="text" id="editName" required>
+            <label for="editRace">Race</label><input type="text" id="editRace" required>
+            <label for="editLevel">Level</label><input type="number" id="editLevel" required>
+            <label for="editHp">HP</label><input type="number" id="editHp" required>
+            <label for="editSp">SP</label><input type="number" id="editSp" required>
+            <label>Stats</label>
+            <input type="number" id="editStr" placeholder="STR" required><input type="number" id="editDx" placeholder="Dx" required>
+            <input type="number" id="editVi" placeholder="Vi" required><input type="number" id="editMa" placeholder="Ma" required>
+            <input type="number" id="editAg" placeholder="Ag" required><input type="number" id="editLu" placeholder="Lu" required>
+            <label for="editDescription">Description</label><textarea id="editDescription" required></textarea>
+            <label>Resistances (e.g., Weak, Resist, Null, Absorb, -)</label>
+            <select id="editPhysRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="editFireRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="editIceRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="editThunderRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="editWindRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="editLightRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="editDarkRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="editAlmightyRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="editEarthRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="editWaterRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <select id="editGunRes"><option value="-">-</option><option value="Weak">Weak</option><option value="Resist">Resist</option><option value="Null">Null</option><option value="Absorb">Absorb</option></select>
+            <label>Affinities (e.g., +3, -1, -)</label>
+            <input type="text" id="editPhysAff" placeholder="Phys"><input type="text" id="editFireAff" placeholder="Fire">
+            <input type="text" id="editIceAff" placeholder="Ice"><input type="text" id="editThunderAff" placeholder="Thunder">
+            <input type="text" id="editWindAff" placeholder="Wind"><input type="text" id="editLightAff" placeholder="Light">
+            <input type="text" id="editDarkAff" placeholder="Dark"><input type="text" id="editAlmightyAff" placeholder="Almighty">
+            <input type="text" id="editEarthAff" placeholder="Earth"><input type="text" id="editWaterAff" placeholder="Water">
+            <input type="text" id="editGunAff" placeholder="Gun"><input type="text" id="editSoporteAff" placeholder="Soporte">
+            <input type="text" id="editCuracionAff" placeholder="Curación"><input type="text" id="editAilmentAff" placeholder="Ailment">
+            <label for="editAilmentResistances">Ailment Resistances (e.g., Resist: Poison, Sleep)</label><input type="text" id="editAilmentResistances">
+            <label for="editSkills">Skills (One per line: Skill|Cost|Effect)</label><textarea id="editSkills"></textarea>
+            <button type="submit">Save Changes</button>
+            <button type="button" onclick="cancelEdit()">Cancel</button>
+        </form>
+    </div>
+
+    <div class="music-control">
+        <button id="playPauseBtn">Play/Pause Music</button>
+    </div>
+
+    <audio id="backgroundMusic" src="https://www.bensound.com/bensound-music/bensound-epic.mp3" loop preload="auto"></audio>
+
     <script>
-        // Firebase config: coloca tus credenciales reales aquí
-  const firebaseConfig = {
-  apiKey: "AIzaSyDJc83VocOq3BVdAsEP2CBM9omct3Aw1ic",
-  authDomain: "compendium-9ecf9.firebaseapp.com",
-  projectId: "compendium-9ecf9",
-  storageBucket: "compendium-9ecf9.firebasestorage.app",
-  messagingSenderId: "957477080739",
-  appId: "1:957477080739:web:c6b2af19f2cd59da357916",
-  measurementId: "G-VX4GTZ9T5X"
+        // Configuración de tu proyecto Firebase (reemplaza con tus valores)
+        const firebaseConfig = {
+              apiKey: "AIzaSyDJc83VocOq3BVdAsEP2CBM9omct3Aw1ic",
+              authDomain: "compedium-9ecf9.firebaseapp.com",
+              databaseURL: "https://compedium-9ecf9-default-rtdb.firebaseio.com",
+              projectId: "compedium-9ecf9",
+              storageBucket: "compedium-9ecf9.firebasestorage.app",
+              messagingSenderId: "957477080739",
+              appId: "1:957477080739:web:c6b2af19f2cd59da357916",
+              measurementId: "G-VX4GTZ9T5X"
         };
 
-        // Inicializar Firebase (usando SDK compat)
+        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
         let demons = [];
+        const demonList = document.getElementById('demonList');
+        const demonDetails = document.getElementById('demonDetails');
+        const addDemonForm = document.getElementById('addDemonForm');
+        const editSection = document.getElementById('editSection');
+        const editDemonForm = document.getElementById('editDemonForm');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        let isMusicPlaying = false;
         let editingIndex = -1;
 
-        // Suscribirse a cambios en Firebase y poblar la lista
-        function subscribeDemons() {
+        function loadDemons() {
             database.ref('demons').on('value', (snapshot) => {
-                const newList = [];
-                snapshot.forEach((child) => {
-                    const demon = child.val();
-                    demon.id = child.key;
-                    newList.push(demon);
-                });
-                demons = newList;
+                demons = snapshot.val() ? Object.values(snapshot.val()) : [];
                 renderDemonList();
-            }, (error) => {
-                console.error('Firebase read failed:', error);
+                if (demons.length > 0) showDemonDetails(0);
             });
         }
 
-        // Semillas iniciales si la base de datos está vacía (una sola vez)
-        function ensureSeed() {
-            database.ref('demons').once('value').then((snap) => {
-                if (snap.exists()) return;
-                const defaults = [
-                    {
-                        name: 'Slime',
-                        race: 'Foul',
-                        level: 1,
-                        hp: 50,
-                        sp: 20,
-                        str: 5,
-                        dx: 5,
-                        vi: 5,
-                        ma: 5,
-                        ag: 5,
-                        lu: 5,
-                        image: 'https://static.wikia.nocookie.net/megamitensei/images/2/26/Slime_%28SH%29.png/revision/latest/scale-to-width-down/1000?cb=20240611114131',
-                        resistances: {
-                            phys: 'Weak', fire: 'Weak', ice: '-', thunder: 'Weak', wind: '-', light: '-', dark: '-', almighty: '-', earth: '-', water: '-', gun: '-'
-                        },
-                        affinities: {
-                            phys: '+1', fire: '-', ice: '-', thunder: '-', wind: '-', light: '-', dark: '-', almighty: '-', earth: '-', water: '-', gun: '-', support: '-', heal: '-', ailment: '-'
-                        },
-                        ailment: 'Resist: Poison',
-                        description: 'A simple, amorphous blob with basic combat abilities.',
-                        skills: [{name: 'Slime Bash', cost: '3 SP', effect: 'Weak Phys attack to 1 foe.'}]
-                    },
-                    {
-                        name: 'Onmoraki',
-                        race: 'Raptor',
-                        level: 1,
-                        hp: 50,
-                        sp: 20,
-                        str: 5,
-                        dx: 5,
-                        vi: 5,
-                        ma: 5,
-                        ag: 5,
-                        lu: 5,
-                        image: 'https://static.wikia.nocookie.net/megamitensei/images/7/75/SH_Onmoraki.png/revision/latest/scale-to-width-down/1000?cb=20240527045806',
-                        resistances: {
-                            phys: '-', fire: '-', ice: 'Weak', thunder: '-', wind: 'Weak', light: '-', dark: '-', almighty: '-', earth: '-', water: '-', gun: '-'
-                        },
-                        affinities: {
-                            phys: '-', fire: '+2', ice: '-', thunder: '-', wind: '-', light: '-', dark: '-', almighty: '-', earth: '-', water: '-', gun: '-', support: '-', heal: '-', ailment: '-'
-                        },
-                        ailment: 'Resist: Sleep',
-                        description: 'A bird-like demon born from the restless dead.',
-                        skills: [{name: 'Wail', cost: '4 SP', effect: 'Weak Dark attack to 1 foe.'}]
-                    },
-                    {
-                        name: 'Pixie',
-                        race: 'Fairy',
-                        level: 1,
-                        hp: 50,
-                        sp: 20,
-                        str: 5,
-                        dx: 5,
-                        vi: 5,
-                        ma: 5,
-                        ag: 5,
-                        lu: 5,
-                        image: 'https://static.wikia.nocookie.net/megamitensei/images/0/0e/Pixie_%28SMT_PSX_Art%29.png/revision/latest/scale-to-width-down/1000?cb=20210912214610',
-                        resistances: {
-                            phys: '-', fire: '-', ice: '-', thunder: 'Weak', wind: '-', light: 'Weak', dark: '-', almighty: '-', earth: '-', water: '-', gun: '-'
-                        },
-                        affinities: {
-                            phys: '-', fire: '-', ice: '-', thunder: '+3', wind: '-', light: '-', dark: '-', almighty: '-', earth: '-', water: '-', gun: '-', support: '-', heal: '-', ailment: '-'
-                        },
-                        ailment: 'Resist: Charm',
-                        description: 'A cheerful fairy with minor magical abilities.',
-                        skills: [{name: 'Zio', cost: '3 SP', effect: 'Weak Thunder attack to 1 foe.'}]
-                    }
-                ];
-                const ref = database.ref('demons');
-                defaults.forEach((d) => ref.push(d));
-            }).catch((err) => console.error('Seed check failed:', err));
-        }
-        
         function renderDemonList() {
-            const ul = document.querySelector('#demon-list ul');
-            ul.innerHTML = '';
+            demonList.innerHTML = '';
             demons.forEach((demon, index) => {
-                const li = document.createElement('li');
-                li.innerHTML = `${demon.name} (${demon.race}, Lv ${demon.level}) <button onclick="deleteDemon(${index})">Delete</button> <button onclick="editDemon(${index})">Edit</button>`;
-                li.onclick = (e) => { if (e.target.tagName !== 'BUTTON') showDemonDetails(index); };
-                ul.appendChild(li);
+                const div = document.createElement('div');
+                div.className = 'demon-item';
+                div.textContent = `${demon.name} (Level ${demon.level})`;
+                div.onclick = () => showDemonDetails(index);
+                demonList.appendChild(div);
             });
         }
-        
+
         function showDemonDetails(index) {
             const demon = demons[index];
-            document.getElementById('demon-name-title').textContent = `${demon.name} Details`;
-            document.getElementById('demon-image').src = demon.image;
-            document.getElementById('name').textContent = demon.name;
-            document.getElementById('race').textContent = demon.race;
-            document.getElementById('level').textContent = demon.level;
-            document.getElementById('hp').textContent = demon.hp;
-            document.getElementById('sp').textContent = demon.sp;
-            document.getElementById('str').textContent = demon.str;
-            document.getElementById('dx').textContent = demon.dx;
-            document.getElementById('vi').textContent = demon.vi;
-            document.getElementById('ma').textContent = demon.ma;
-            document.getElementById('ag').textContent = demon.ag;
-            document.getElementById('lu').textContent = demon.lu;
-            
-            document.getElementById('phys-res').textContent = demon.resistances.phys;
-            document.getElementById('fire-res').textContent = demon.resistances.fire;
-            document.getElementById('ice-res').textContent = demon.resistances.ice;
-            document.getElementById('thunder-res').textContent = demon.resistances.thunder;
-            document.getElementById('wind-res').textContent = demon.resistances.wind;
-            document.getElementById('light-res').textContent = demon.resistances.light;
-            document.getElementById('dark-res').textContent = demon.resistances.dark;
-            document.getElementById('almighty-res').textContent = demon.resistances.almighty;
-            document.getElementById('earth-res').textContent = demon.resistances.earth;
-            document.getElementById('water-res').textContent = demon.resistances.water;
-            document.getElementById('gun-res').textContent = demon.resistances.gun;
-            
-            document.getElementById('phys-aff').textContent = demon.affinities.phys;
-            document.getElementById('fire-aff').textContent = demon.affinities.fire;
-            document.getElementById('ice-aff').textContent = demon.affinities.ice;
-            document.getElementById('thunder-aff').textContent = demon.affinities.thunder;
-            document.getElementById('wind-aff').textContent = demon.affinities.wind;
-            document.getElementById('light-aff').textContent = demon.affinities.light;
-            document.getElementById('dark-aff').textContent = demon.affinities.dark;
-            document.getElementById('almighty-aff').textContent = demon.affinities.almighty;
-            document.getElementById('earth-aff').textContent = demon.affinities.earth;
-            document.getElementById('water-aff').textContent = demon.affinities.water;
-            document.getElementById('gun-aff').textContent = demon.affinities.gun;
-            document.getElementById('support-aff').textContent = demon.affinities.support;
-            document.getElementById('heal-aff').textContent = demon.affinities.heal;
-            document.getElementById('ailment-aff').textContent = demon.affinities.ailment;
-            
-            document.getElementById('ailment-res').textContent = demon.ailment;
-            
-            document.getElementById('description').textContent = demon.description;
-            
-            const skillsTable = document.getElementById('skills-table');
-            const tbody = skillsTable.querySelector('tbody') || skillsTable;
-            tbody.innerHTML = '<tr><th>Skill</th><th>Cost</th><th>Effect</th></tr>';
-            demon.skills.forEach(skill => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${skill.name}</td><td>${skill.cost}</td><td>${skill.effect}</td>`;
-                tbody.appendChild(tr);
+            document.getElementById('detailName').textContent = demon.name;
+            document.getElementById('detailRace').textContent = demon.race;
+            document.getElementById('detailLevel').textContent = demon.level;
+            document.getElementById('detailHp').textContent = demon.hp;
+            document.getElementById('detailSp').textContent = demon.sp;
+            document.getElementById('detailStr').textContent = demon.stats.str;
+            document.getElementById('detailDx').textContent = demon.stats.dx;
+            document.getElementById('detailVi').textContent = demon.stats.vi;
+            document.getElementById('detailMa').textContent = demon.stats.ma;
+            document.getElementById('detailAg').textContent = demon.stats.ag;
+            document.getElementById('detailLu').textContent = demon.stats.lu;
+            document.getElementById('detailDescription').textContent = demon.description;
+            document.getElementById('detailResistances').textContent = JSON.stringify(demon.resistances);
+            document.getElementById('detailAffinities').textContent = JSON.stringify(demon.affinities);
+            document.getElementById('detailAilmentResistances').textContent = demon.ailmentResistances;
+            document.getElementById('detailSkills').textContent = Object.entries(demon.skills).map(([name, { cost, effect }]) => `${name} | ${cost} | ${effect}`).join('\n');
+        }
+
+        addDemonForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const demon = {
+                name: document.getElementById('name').value,
+                race: document.getElementById('race').value,
+                level: parseInt(document.getElementById('level').value),
+                hp: parseInt(document.getElementById('hp').value),
+                sp: parseInt(document.getElementById('sp').value),
+                stats: {
+                    str: parseInt(document.getElementById('str').value),
+                    dx: parseInt(document.getElementById('dx').value),
+                    vi: parseInt(document.getElementById('vi').value),
+                    ma: parseInt(document.getElementById('ma').value),
+                    ag: parseInt(document.getElementById('ag').value),
+                    lu: parseInt(document.getElementById('lu').value)
+                },
+                description: document.getElementById('description').value,
+                resistances: {
+                    phys: document.getElementById('physRes').value,
+                    fire: document.getElementById('fireRes').value,
+                    ice: document.getElementById('iceRes').value,
+                    thunder: document.getElementById('thunderRes').value,
+                    wind: document.getElementById('windRes').value,
+                    light: document.getElementById('lightRes').value,
+                    dark: document.getElementById('darkRes').value,
+                    almighty: document.getElementById('almightyRes').value,
+                    earth: document.getElementById('earthRes').value,
+                    water: document.getElementById('waterRes').value,
+                    gun: document.getElementById('gunRes').value
+                },
+                affinities: {
+                    phys: document.getElementById('physAff').value,
+                    fire: document.getElementById('fireAff').value,
+                    ice: document.getElementById('iceAff').value,
+                    thunder: document.getElementById('thunderAff').value,
+                    wind: document.getElementById('windAff').value,
+                    light: document.getElementById('lightAff').value,
+                    dark: document.getElementById('darkAff').value,
+                    almighty: document.getElementById('almightyAff').value,
+                    earth: document.getElementById('earthAff').value,
+                    water: document.getElementById('waterAff').value,
+                    gun: document.getElementById('gunAff').value,
+                    soporte: document.getElementById('soporteAff').value,
+                    curacion: document.getElementById('curacionAff').value,
+                    ailment: document.getElementById('ailmentAff').value
+                },
+                ailmentResistances: document.getElementById('ailmentResistances').value,
+                skills: {}
+            };
+            const skillsInput = document.getElementById('skills').value.split('\n');
+            skillsInput.forEach(line => {
+                const [name, cost, effect] = line.split('|').map(s => s.trim());
+                if (name && cost && effect) {
+                    demon.skills[name] = { cost: parseInt(cost), effect };
+                }
             });
-            
-            document.getElementById('demon-details').style.display = 'block';
-        }
-        
-        function deleteDemon(index) {
-            if (!confirm('Are you sure you want to delete this demon?')) return;
-            const id = demons[index]?.id;
-            if (!id) return;
-            database.ref(`demons/${id}`).remove()
+            database.ref('demons').push(demon)
                 .then(() => {
-                    document.getElementById('demon-details').style.display = 'none';
-                    document.getElementById('edit-form').style.display = 'none';
+                    addDemonForm.reset();
+                    alert('Demon added successfully!');
                 })
-                .catch(err => console.error('Delete failed:', err));
-        }
-        
+                .catch(error => {
+                    alert('Error adding demon: ' + error.message);
+                });
+        });
+
         function editDemon(index) {
             editingIndex = index;
             const demon = demons[index];
-            document.getElementById('edit-name').value = demon.name;
-            document.getElementById('edit-race').value = demon.race;
-            document.getElementById('edit-level').value = demon.level;
-            document.getElementById('edit-hp').value = demon.hp;
-            document.getElementById('edit-sp').value = demon.sp;
-            document.getElementById('edit-str').value = demon.str;
-            document.getElementById('edit-dx').value = demon.dx;
-            document.getElementById('edit-vi').value = demon.vi;
-            document.getElementById('edit-ma').value = demon.ma;
-            document.getElementById('edit-ag').value = demon.ag;
-            document.getElementById('edit-lu').value = demon.lu;
-            document.getElementById('edit-phys-res').value = demon.resistances.phys;
-            document.getElementById('edit-fire-res').value = demon.resistances.fire;
-            document.getElementById('edit-ice-res').value = demon.resistances.ice;
-            document.getElementById('edit-thunder-res').value = demon.resistances.thunder;
-            document.getElementById('edit-wind-res').value = demon.resistances.wind;
-            document.getElementById('edit-light-res').value = demon.resistances.light;
-            document.getElementById('edit-dark-res').value = demon.resistances.dark;
-            document.getElementById('edit-almighty-res').value = demon.resistances.almighty;
-            document.getElementById('edit-earth-res').value = demon.resistances.earth;
-            document.getElementById('edit-water-res').value = demon.resistances.water;
-            document.getElementById('edit-gun-res').value = demon.resistances.gun;
-            document.getElementById('edit-phys-aff').value = demon.affinities.phys;
-            document.getElementById('edit-fire-aff').value = demon.affinities.fire;
-            document.getElementById('edit-ice-aff').value = demon.affinities.ice;
-            document.getElementById('edit-thunder-aff').value = demon.affinities.thunder;
-            document.getElementById('edit-wind-aff').value = demon.affinities.wind;
-            document.getElementById('edit-light-aff').value = demon.affinities.light;
-            document.getElementById('edit-dark-aff').value = demon.affinities.dark;
-            document.getElementById('edit-almighty-aff').value = demon.affinities.almighty;
-            document.getElementById('edit-earth-aff').value = demon.affinities.earth;
-            document.getElementById('edit-water-aff').value = demon.affinities.water;
-            document.getElementById('edit-gun-aff').value = demon.affinities.gun;
-            document.getElementById('edit-support-aff').value = demon.affinities.support;
-            document.getElementById('edit-heal-aff').value = demon.affinities.heal;
-            document.getElementById('edit-ailment-aff').value = demon.affinities.ailment;
-            document.getElementById('edit-ailment-res').value = demon.ailment;
-            document.getElementById('edit-description').value = demon.description;
-            document.getElementById('edit-skills').value = demon.skills.map(s => `${s.name}|${s.cost}|${s.effect}`).join('\n');
-            document.getElementById('edit-form').style.display = 'block';
-            document.getElementById('demon-details').style.display = 'none';
+            document.getElementById('editName').value = demon.name;
+            document.getElementById('editRace').value = demon.race;
+            document.getElementById('editLevel').value = demon.level;
+            document.getElementById('editHp').value = demon.hp;
+            document.getElementById('editSp').value = demon.sp;
+            document.getElementById('editStr').value = demon.stats.str;
+            document.getElementById('editDx').value = demon.stats.dx;
+            document.getElementById('editVi').value = demon.stats.vi;
+            document.getElementById('editMa').value = demon.stats.ma;
+            document.getElementById('editAg').value = demon.stats.ag;
+            document.getElementById('editLu').value = demon.stats.lu;
+            document.getElementById('editDescription').value = demon.description;
+            document.getElementById('editPhysRes').value = demon.resistances.phys;
+            document.getElementById('editFireRes').value = demon.resistances.fire;
+            document.getElementById('editIceRes').value = demon.resistances.ice;
+            document.getElementById('editThunderRes').value = demon.resistances.thunder;
+            document.getElementById('editWindRes').value = demon.resistances.wind;
+            document.getElementById('editLightRes').value = demon.resistances.light;
+            document.getElementById('editDarkRes').value = demon.resistances.dark;
+            document.getElementById('editAlmightyRes').value = demon.resistances.almighty;
+            document.getElementById('editEarthRes').value = demon.resistances.earth;
+            document.getElementById('editWaterRes').value = demon.resistances.water;
+            document.getElementById('editGunRes').value = demon.resistances.gun;
+            document.getElementById('editPhysAff').value = demon.affinities.phys;
+            document.getElementById('editFireAff').value = demon.affinities.fire;
+            document.getElementById('editIceAff').value = demon.affinities.ice;
+            document.getElementById('editThunderAff').value = demon.affinities.thunder;
+            document.getElementById('editWindAff').value = demon.affinities.wind;
+            document.getElementById('editLightAff').value = demon.affinities.light;
+            document.getElementById('editDarkAff').value = demon.affinities.dark;
+            document.getElementById('editAlmightyAff').value = demon.affinities.almighty;
+            document.getElementById('editEarthAff').value = demon.affinities.earth;
+            document.getElementById('editWaterAff').value = demon.affinities.water;
+            document.getElementById('editGunAff').value = demon.affinities.gun;
+            document.getElementById('editSoporteAff').value = demon.affinities.soporte;
+            document.getElementById('editCuracionAff').value = demon.affinities.curacion;
+            document.getElementById('editAilmentAff').value = demon.affinities.ailment;
+            document.getElementById('editAilmentResistances').value = demon.ailmentResistances;
+            document.getElementById('editSkills').value = Object.entries(demon.skills).map(([name, { cost, effect }]) => `${name}|${cost}|${effect}`).join('\n');
+            editSection.style.display = 'block';
         }
-        
-        function saveEdit() {
-            const fileInput = document.getElementById('edit-image');
-            const file = fileInput.files[0];
-            let imageUrl = demons[editingIndex].image;
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imageUrl = e.target.result;
-                    updateDemon(imageUrl);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                updateDemon(imageUrl);
-            }
-        }
-        
-        function updateDemon(imageUrl) {
-            const skillsText = document.getElementById('edit-skills').value.trim();
-            const skills = skillsText ? skillsText.split('\n').map(line => {
-                const [name, cost, effect] = line.split('|').map(s => s.trim());
-                return {name, cost, effect};
-            }) : [];
-            const id = demons[editingIndex]?.id;
-            if (!id) return;
-            const updated = {
-                name: document.getElementById('edit-name').value,
-                race: document.getElementById('edit-race').value,
-                level: parseInt(document.getElementById('edit-level').value),
-                hp: parseInt(document.getElementById('edit-hp').value),
-                sp: parseInt(document.getElementById('edit-sp').value),
-                str: parseInt(document.getElementById('edit-str').value),
-                dx: parseInt(document.getElementById('edit-dx').value),
-                vi: parseInt(document.getElementById('edit-vi').value),
-                ma: parseInt(document.getElementById('edit-ma').value),
-                ag: parseInt(document.getElementById('edit-ag').value),
-                lu: parseInt(document.getElementById('edit-lu').value),
-                image: imageUrl,
+
+        editDemonForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const demon = {
+                name: document.getElementById('editName').value,
+                race: document.getElementById('editRace').value,
+                level: parseInt(document.getElementById('editLevel').value),
+                hp: parseInt(document.getElementById('editHp').value),
+                sp: parseInt(document.getElementById('editSp').value),
+                stats: {
+                    str: parseInt(document.getElementById('editStr').value),
+                    dx: parseInt(document.getElementById('editDx').value),
+                    vi: parseInt(document.getElementById('editVi').value),
+                    ma: parseInt(document.getElementById('editMa').value),
+                    ag: parseInt(document.getElementById('editAg').value),
+                    lu: parseInt(document.getElementById('editLu').value)
+                },
+                description: document.getElementById('editDescription').value,
                 resistances: {
-                    phys: document.getElementById('edit-phys-res').value || '-',
-                    fire: document.getElementById('edit-fire-res').value || '-',
-                    ice: document.getElementById('edit-ice-res').value || '-',
-                    thunder: document.getElementById('edit-thunder-res').value || '-',
-                    wind: document.getElementById('edit-wind-res').value || '-',
-                    light: document.getElementById('edit-light-res').value || '-',
-                    dark: document.getElementById('edit-dark-res').value || '-',
-                    almighty: document.getElementById('edit-almighty-res').value || '-',
-                    earth: document.getElementById('edit-earth-res').value || '-',
-                    water: document.getElementById('edit-water-res').value || '-',
-                    gun: document.getElementById('edit-gun-res').value || '-'
+                    phys: document.getElementById('editPhysRes').value,
+                    fire: document.getElementById('editFireRes').value,
+                    ice: document.getElementById('editIceRes').value,
+                    thunder: document.getElementById('editThunderRes').value,
+                    wind: document.getElementById('editWindRes').value,
+                    light: document.getElementById('editLightRes').value,
+                    dark: document.getElementById('editDarkRes').value,
+                    almighty: document.getElementById('editAlmightyRes').value,
+                    earth: document.getElementById('editEarthRes').value,
+                    water: document.getElementById('editWaterRes').value,
+                    gun: document.getElementById('editGunRes').value
                 },
                 affinities: {
-                    phys: document.getElementById('edit-phys-aff').value || '-',
-                    fire: document.getElementById('edit-fire-aff').value || '-',
-                    ice: document.getElementById('edit-ice-aff').value || '-',
-                    thunder: document.getElementById('edit-thunder-aff').value || '-',
-                    wind: document.getElementById('edit-wind-aff').value || '-',
-                    light: document.getElementById('edit-light-aff').value || '-',
-                    dark: document.getElementById('edit-dark-aff').value || '-',
-                    almighty: document.getElementById('edit-almighty-aff').value || '-',
-                    earth: document.getElementById('edit-earth-aff').value || '-',
-                    water: document.getElementById('edit-water-aff').value || '-',
-                    gun: document.getElementById('edit-gun-aff').value || '-',
-                    support: document.getElementById('edit-support-aff').value || '-',
-                    heal: document.getElementById('edit-heal-aff').value || '-',
-                    ailment: document.getElementById('edit-ailment-aff').value || '-'
+                    phys: document.getElementById('editPhysAff').value,
+                    fire: document.getElementById('editFireAff').value,
+                    ice: document.getElementById('editIceAff').value,
+                    thunder: document.getElementById('editThunderAff').value,
+                    wind: document.getElementById('editWindAff').value,
+                    light: document.getElementById('editLightAff').value,
+                    dark: document.getElementById('editDarkAff').value,
+                    almighty: document.getElementById('editAlmightyAff').value,
+                    earth: document.getElementById('editEarthAff').value,
+                    water: document.getElementById('editWaterAff').value,
+                    gun: document.getElementById('editGunAff').value,
+                    soporte: document.getElementById('editSoporteAff').value,
+                    curacion: document.getElementById('editCuracionAff').value,
+                    ailment: document.getElementById('editAilmentAff').value
                 },
-                ailment: document.getElementById('edit-ailment-res').value || '',
-                description: document.getElementById('edit-description').value || '',
-                skills: skills
+                ailmentResistances: document.getElementById('editAilmentResistances').value,
+                skills: {}
             };
-            database.ref(`demons/${id}`).set(updated)
+            const skillsInput = document.getElementById('editSkills').value.split('\n');
+            skillsInput.forEach(line => {
+                const [name, cost, effect] = line.split('|').map(s => s.trim());
+                if (name && cost && effect) {
+                    demon.skills[name] = { cost: parseInt(cost), effect };
+                }
+            });
+            const demonRef = database.ref('demons').child(Object.keys(demons)[editingIndex]); // Ajusta según la clave de Firebase
+            demonRef.update(demon)
                 .then(() => {
-                    document.getElementById('edit-form').style.display = 'none';
+                    editSection.style.display = 'none';
+                    alert('Demon updated successfully!');
                 })
-                .catch(err => console.error('Update failed:', err));
-        }
-        
+                .catch(error => {
+                    alert('Error updating demon: ' + error.message);
+                });
+        });
+
         function cancelEdit() {
-            document.getElementById('edit-form').style.display = 'none';
-            if (editingIndex !== -1) showDemonDetails(editingIndex);
+            editSection.style.display = 'none';
         }
-        
-        function addDemon() {
-            const fileInput = document.getElementById('new-image');
-            const file = fileInput.files[0];
-            let imageUrl = '';
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imageUrl = e.target.result;
-                    saveDemon(imageUrl);
-                };
-                reader.readAsDataURL(file);
-            } else {
-                saveDemon('');
-            }
-        }
-        
-        function saveDemon(imageUrl) {
-            const skillsText = document.getElementById('new-skills').value.trim();
-            const skills = skillsText ? skillsText.split('\n').map(line => {
-                const [name, cost, effect] = line.split('|').map(s => s.trim());
-                return {name, cost, effect};
-            }) : [];
-            
-            const newDemon = {
-                name: document.getElementById('new-name').value,
-                race: document.getElementById('new-race').value,
-                level: parseInt(document.getElementById('new-level').value),
-                hp: parseInt(document.getElementById('new-hp').value),
-                sp: parseInt(document.getElementById('new-sp').value),
-                str: parseInt(document.getElementById('new-str').value),
-                dx: parseInt(document.getElementById('new-dx').value),
-                vi: parseInt(document.getElementById('new-vi').value),
-                ma: parseInt(document.getElementById('new-ma').value),
-                ag: parseInt(document.getElementById('new-ag').value),
-                lu: parseInt(document.getElementById('new-lu').value),
-                image: imageUrl || 'https://imgur.com/gNrZdsa.png',
-                resistances: {
-                    phys: document.getElementById('new-phys-res').value || '-',
-                    fire: document.getElementById('new-fire-res').value || '-',
-                    ice: document.getElementById('new-ice-res').value || '-',
-                    thunder: document.getElementById('new-thunder-res').value || '-',
-                    wind: document.getElementById('new-wind-res').value || '-',
-                    light: document.getElementById('new-light-res').value || '-',
-                    dark: document.getElementById('new-dark-res').value || '-',
-                    almighty: document.getElementById('new-almighty-res').value || '-',
-                    earth: document.getElementById('new-earth-res').value || '-',
-                    water: document.getElementById('new-water-res').value || '-',
-                    gun: document.getElementById('new-gun-res').value || '-'
-                },
-                affinities: {
-                    phys: document.getElementById('new-phys-aff').value || '-',
-                    fire: document.getElementById('new-fire-aff').value || '-',
-                    ice: document.getElementById('new-ice-aff').value || '-',
-                    thunder: document.getElementById('new-thunder-aff').value || '-',
-                    wind: document.getElementById('new-wind-aff').value || '-',
-                    light: document.getElementById('new-light-aff').value || '-',
-                    dark: document.getElementById('new-dark-aff').value || '-',
-                    almighty: document.getElementById('new-almighty-aff').value || '-',
-                    earth: document.getElementById('new-earth-aff').value || '-',
-                    water: document.getElementById('new-water-aff').value || '-',
-                    gun: document.getElementById('new-gun-aff').value || '-',
-                    support: document.getElementById('new-support-aff').value || '-',
-                    heal: document.getElementById('new-heal-aff').value || '-',
-                    ailment: document.getElementById('new-ailment-aff').value || '-'
-                },
-                ailment: document.getElementById('new-ailment-res').value || '',
-                description: document.getElementById('new-description').value || '',
-                skills: skills
-            };
-            
-            database.ref('demons').push(newDemon)
-                .then(() => {
-                    document.querySelector('#add-demon-form form').reset();
-                })
-                .catch(err => console.error('Add failed:', err));
-        }
-        
-        function toggleMusic() {
-            const audio = document.getElementById('bg-music');
-            if (audio.paused) {
-                audio.play();
-            } else {
-                audio.pause();
-            }
-        }
-        
+
         function exportToExcel() {
-            const csv = [
-                ['Name', 'Race', 'Level', 'HP', 'SP', 'STR', 'Dx', 'Vi', 'Ma', 'Ag', 'Lu', 'Phys Res', 'Fire Res', 'Ice Res', 'Thunder Res', 'Wind Res', 'Light Res', 'Dark Res', 'Almighty Res', 'Earth Res', 'Water Res', 'Gun Res', 'Phys Aff', 'Fire Aff', 'Ice Aff', 'Thunder Aff', 'Wind Aff', 'Light Aff', 'Dark Aff', 'Almighty Aff', 'Earth Aff', 'Water Aff', 'Gun Aff', 'Support Aff', 'Heal Aff', 'Ailment Aff', 'Ailment Res', 'Description', 'Skills'],
-                ...demons.map(demon => [
-                    demon.name, demon.race, demon.level, demon.hp, demon.sp, demon.str, demon.dx, demon.vi, demon.ma, demon.ag, demon.lu,
-                    demon.resistances.phys, demon.resistances.fire, demon.resistances.ice, demon.resistances.thunder, demon.resistances.wind, demon.resistances.light,
-                    demon.resistances.dark, demon.resistances.almighty, demon.resistances.earth, demon.resistances.water, demon.resistances.gun,
-                    demon.affinities.phys, demon.affinities.fire, demon.affinities.ice, demon.affinities.thunder, demon.affinities.wind, demon.affinities.light,
-                    demon.affinities.dark, demon.affinities.almighty, demon.affinities.earth, demon.affinities.water, demon.affinities.gun,
-                    demon.affinities.support, demon.affinities.heal, demon.affinities.ailment,
-                    demon.ailment, demon.description, demon.skills.map(s => `${s.name}|${s.cost}|${s.effect}`).join(';')
-                ])
-            ].map(row => row.join(',')).join('\n');
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'smt_compendium.csv';
-            a.click();
+            const data = demons.map(demon => ({
+                Name: demon.name,
+                Race: demon.race,
+                Level: demon.level,
+                HP: demon.hp,
+                SP: demon.sp,
+                STR: demon.stats.str,
+                Dx: demon.stats.dx,
+                Vi: demon.stats.vi,
+                Ma: demon.stats.ma,
+                Ag: demon.stats.ag,
+                Lu: demon.stats.lu,
+                Description: demon.description,
+                Resistances: JSON.stringify(demon.resistances),
+                Affinities: JSON.stringify(demon.affinities),
+                AilmentResistances: demon.ailmentResistances,
+                Skills: Object.entries(demon.skills).map(([name, { cost, effect }]) => `${name}|${cost}|${effect}`).join('\n')
+            }));
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Demons');
+            XLSX.writeFile(wb, 'demon_compendium.xlsx');
         }
-        
-    // Inicializa datos
-    ensureSeed();
-    subscribeDemons();
+
+        playPauseBtn.addEventListener('click', () => {
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            if (isMusicPlaying) {
+                backgroundMusic.pause();
+                playPauseBtn.textContent = 'Play/Pause Music';
+            } else {
+                backgroundMusic.play().catch(error => console.log('Error playing music:', error));
+                playPauseBtn.textContent = 'Pause Music';
+            }
+            isMusicPlaying = !isMusicPlaying;
+        });
+
+        loadDemons();
+
+        // Ejemplo inicial (opcional, se cargará desde Firebase)
+        if (demons.length === 0) {
+            demons.push({
+                name: "Jack Frost",
+                race: "Fairy",
+                level: 10,
+                hp: 100,
+                sp: 50,
+                stats: { str: 10, dx: 12, vi: 8, ma: 15, ag: 11, lu: 9 },
+                description: "A cheerful snowman-like demon who loves to cast Bufu.",
+                resistances: { phys: "-", fire: "Weak", ice: "Null", thunder: "-", wind: "-", light: "-", dark: "-", almighty: "-", earth: "-", water: "-", gun: "-" },
+                affinities: { phys: "-", fire: "-", ice: "+3", thunder: "-", wind: "-", light: "-", dark: "-", almighty: "-", earth: "-", water: "-", gun: "-", soporte: "-", curacion: "-", ailment: "-" },
+                ailmentResistances: "Resist: Freeze",
+                skills: { "Bufu": { cost: 4, effect: "Deals Ice damage to one foe." } }
+            });
+            renderDemonList();
+            showDemonDetails(0);
+        }
     </script>
 </body>
 </html>
