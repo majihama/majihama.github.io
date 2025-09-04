@@ -1,0 +1,1 @@
+# majihama.github.io
